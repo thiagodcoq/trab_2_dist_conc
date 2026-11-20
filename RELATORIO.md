@@ -132,33 +132,37 @@ Roteiro completo de console, operação (CLI e web), `curl` e troubleshooting no
 
 ## 8. Testes realizados
 
-Executados com `./testes.sh` contra as Function URLs reais. Resultados a preencher após a execução no Learner Lab.
+Executados com `./testes.sh` contra as Function URLs reais, no Learner Lab (us-east-1), em 20/11/2026. Resumo da execução: **9 OK, 0 FALHOU**. As asserções de cada cenário (status HTTP, status do pedido e quantidade em estoque) passaram. A chegada dos e-mails foi conferida manualmente na caixa de entrada.
 
 | # | Cenário | Esperado | Resultado |
 |---|---|---|---|
-| 1 | `compra_disponivel` | Pedido `RESERVADO`, qtd 2→1, e-mail ao cliente A | `<preencher>` |
-| 2 | `compra_indisponivel` | Pedido `AGUARDANDO`, sem e-mail | `<preencher>` |
-| 3 | `compra_indisponivel_depois_chega` | Chegada +1 → `RESERVADO`, qtd 0, e-mail ao A | `<preencher>` |
-| 4 | `fila_fifo` | A reservado primeiro, B depois; dois e-mails em ordem | `<preencher>` |
-| 5 | `chegada_maior_que_fila` | 1 esperando, chegam 3 → 1 reservado, qtd final 2 | `<preencher>` |
-| 6 | `ultimo_exemplar_concorrente` | 2 threads, qtd 1 → 1 `RESERVADO` e 1 `AGUARDANDO`, qtd 0 | `<preencher>` |
-| 7 | `cliente_nao_cadastrado` | 404, nenhum pedido criado | `<preencher>` |
-| 8 | `livro_inexistente` | 404 | `<preencher>` |
-| 9 | `entrada_invalida` | 400 | `<preencher>` |
+| 1 | `compra_disponivel` | Pedido `RESERVADO`, qtd 2→1, e-mail ao cliente A | OK. E-mail recebido pelo cliente A |
+| 2 | `compra_indisponivel` | Pedido `AGUARDANDO`, sem e-mail | OK. Asserções passaram |
+| 3 | `compra_indisponivel_depois_chega` | Chegada +1 → `RESERVADO`, qtd 0, e-mail ao A | OK. E-mail recebido pelo cliente A |
+| 4 | `fila_fifo` | A reservado primeiro, B depois; dois e-mails em ordem | OK nas asserções (ordem FIFO dos status). E-mail do A recebido; recebimento do B e ordem das mensagens não conferidos |
+| 5 | `chegada_maior_que_fila` | 1 esperando, chegam 3 → 1 reservado, qtd final 2 | OK. Asserções passaram |
+| 6 | `ultimo_exemplar_concorrente` | 2 threads, qtd 1 → 1 `RESERVADO` e 1 `AGUARDANDO`, qtd 0 | OK. A escrita condicional impediu a venda dupla do último exemplar |
+| 7 | `cliente_nao_cadastrado` | 404, nenhum pedido criado | OK |
+| 8 | `livro_inexistente` | 404 | OK |
+| 9 | `entrada_invalida` | 400 | OK |
+
+Além dos cenários automatizados, o fluxo foi repetido manualmente pela página web: pedido do livro L002 (sem estoque) → `AGUARDANDO`; chegada de 1 exemplar pelo bloco Colaborador → pedido passou a `RESERVADO` e o e-mail chegou ao cliente.
 
 ## 9. O que funcionou / o que não funcionou
 
 | Item | Funcionou? | Observações |
 |---|---|---|
-| Criação das tabelas e Streams | `<preencher>` | |
-| Inscrições SNS com filter policy | `<preencher>` | Verificar que o cliente B não recebe o e-mail do A |
-| Lambdas e eventos de teste no console | `<preencher>` | |
-| Function URLs / CORS | `<preencher>` | |
-| Cenários automatizados | `<preencher>` | |
-| CLI comprador / colaborador | `<preencher>` | |
-| Página web | `<preencher>` | |
+| Criação das tabelas e Streams | Sim | 3 tabelas On-demand; Streams `NEW_AND_OLD_IMAGES` ativos em `sebo-livros` e `sebo-pedidos` |
+| Inscrições SNS com filter policy | Parcial | As 4 inscrições foram criadas com a filter policy. Duas ficaram `Confirmado` e duas ficaram em `Confirmação pendente` (dependem de o dono do e-mail clicar no link). O e-mail do cliente A chegou à sua caixa. Não foi verificado que o cliente B **não** recebe o e-mail do A |
+| Lambdas | Sim | As 6 Lambdas foram criadas (Python 3.12, `LabRole`), com código por upload de `.zip` e variáveis de ambiente. Os eventos de `lambdas/eventos_teste/` **não** foram executados no console; a validação foi feita pelos cenários e pela página web |
+| Triggers de Stream | Sim | `sebo-processa-espera` ← `sebo-livros` e `sebo-notifica` ← `sebo-pedidos` (lote 10, posição inicial Latest), ambos habilitados |
+| Function URLs / CORS | Sim, com ajuste | Com CORS ativo **na Function URL e no código**, a resposta saiu com `Access-Control-Allow-Origin` duplicado e o navegador falhou ("Failed to fetch"). Solução: CORS desligado na Function URL de `sebo-pedido`, `sebo-chegada` e `sebo-consulta`, mantendo só o do código, que também responde ao preflight. Cada URL passou a devolver um único cabeçalho |
+| Cenários automatizados | Sim | 9 OK, 0 FALHOU (seção 8) |
+| Página web | Sim | Funcionou após o ajuste de CORS acima (listar, pedir, meus pedidos e registrar chegada) |
 
-Validação local feita até aqui (sem AWS): compilação de todos os `.py` (`py_compile`) e `bash -n` nos scripts.
+**Pontos de atenção observados:**
+- As Lambdas ficaram com o timeout padrão de 3 s; não houve falha nos testes.
+- A Function URL de `sebo-carga` manteve o CORS ligado na própria URL; ela só é usada por `seed.sh` e pelos testes, não pelo navegador.
 
 ## 10. Limitações
 
