@@ -173,3 +173,4 @@ Além dos cenários automatizados, o fluxo foi repetido manualmente pela página
 - Em `sebo-processa-espera`, se o pedido já tiver sido tratado por outra execução, o exemplar baixado é devolvido ao estoque (compensação adicionada para não perder estoque em reentrega do Stream).
 
 aaaa
+aaaa
