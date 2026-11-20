@@ -2,8 +2,8 @@
 
 ## 1. Identificação
 
-- **Disciplina:** Distribuição e Concorrência (2026/2)
-- **Integrantes:** Thiago Coqueiro, Guilherme Gratz, Felipe Peixoto
+- **Disciplina:** Distribuição e Concorrência (2026.2)
+- **Integrantes:** Felipe Peixoto, Guilherme Gratz e Thiago Coqueiro
 - **Conta AWS Academy com a implementação:** thiagodamicoc@gmail.com
 
 ## 2. Visão geral e decisões de projeto
@@ -25,10 +25,6 @@ O comprador informa o livro desejado. Havendo estoque, o livro é **reservado** 
 | Testes | Cenários Python contra as Function URLs reais + `testes.sh` | Prova o comportamento ponta a ponta |
 | Infraestrutura | Console, com roteiro no README | Como nos slides |
 
-Ligações com as aulas:
-- **Lambda de responsabilidade única** (como no lab Inventory): cada uma das 6 funções faz uma coisa.
-- **Streams como gatilho** (como `Check-Stock`): o e-mail só sai da `sebo-notifica`, disparada pela mudança de status do pedido.
-- **Condição de corrida** (aula de threads): o último exemplar disputado por duas requisições é resolvido por escrita condicional atômica (`ConditionExpression quantidade > 0`), sem lock explícito.
 
 ## 3. Diagrama de blocos
 
